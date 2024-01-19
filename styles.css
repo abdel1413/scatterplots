@@ -1,11 +1,11 @@
-body {
+/* body {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border: 1px solid red;
   margin: 70px auto;
-}
+} */
 
 .container {
   border: 3px solid red;
@@ -24,10 +24,24 @@ svg {
   justify-content: center;
   text-align: center;
   font-size: 2rem;
-  color: white;
+  color: red;
   margin-top: 3rem;
+  margin-right: 40px;
 }
-#subtitle {
+
+.subtitle {
   margin-top: 30px;
+  margin-bottom: 40px;
   font-size: 1.2rem;
+  color: red;
+  background: blue;
+  display: block;
+}
+
+#tooltip {
+  border: 1px solid #000;
+  background-color: #e9f6fd;
+  padding: 0.5rem;
+  border-radius: 10px;
+  width: 150px;
 }

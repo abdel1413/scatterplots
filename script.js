@@ -5,8 +5,9 @@ let xScale,
   yAxis,
   dataset = [],
   svg;
+let tooltip;
 const height = 500,
-  width = 900,
+  width = 800,
   padding = 50;
 
 // canvas
@@ -26,13 +27,15 @@ const drawCanvas = () => {
     .attr("id", "title")
     .attr("x", "25%")
     .attr("y", "40px")
+    .attr("display", "block")
     .html("Doping in Professional Bicycle Racing");
 
   svg
     .append("text")
-    .attr("id", "subtitle")
+    .attr("class", "subtitle")
     .attr("x", "32%")
     .attr("y", "70px")
+    .style("display", "inline-block")
     .html("35 Fastest times up Alpe d'Huez");
 };
 
@@ -42,17 +45,24 @@ const generateScales = () => {
   const dateArray = dataset.map((item) => item.Year);
 
   const minutes = dataset.map((item) => item.Seconds / 60);
-  console.log(dateArray);
+
+  const time = dataset.map((item) => {
+    return item.Time;
+  });
 
   xScale = d3
     .scaleLinear()
-    .domain([d3.min(dateArray), d3.max(dateArray)])
+    .domain([d3.min(dataset, (d) => d.Year), d3.max(dataset, (d, i) => d.Year)])
     .range([padding, width - padding]);
 
+  //   yScale = d3
+  //     .scaleLinear()
+  //     .domain([d3.max(minutes), d3.min(minutes)])
+  //     .range([height - padding, padding]);
   yScale = d3
     .scaleLinear()
-    .domain([d3.min(minutes), d3.max(minutes)])
-    .range([padding, height - padding]);
+    .domain([d3.max(minutes), d3.min(minutes)])
+    .range([height - padding, padding]);
 };
 
 // axis
@@ -73,8 +83,51 @@ const generateAxis = () => {
     .call(yAxis);
 };
 
+const mouseOverHandler = () => {
+  tooltip.transition().style("visibility", "visible");
+};
+const mouseOutHandler = () => {};
 // circles
-const drawCircles = (d) => {};
+const drawCircles = (d, i) => {
+  console.log(d[0].Year);
+
+  const date = d.map((item) => item.Year);
+
+  // tooltip
+  tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("id", "tooltip")
+    .style("visibility", "visible")
+    .attr("data-year", () => d)
+    .style("position", "absolute")
+    .style("background", "yellow")
+    .style("border", "1px solid black")
+    .style("opacity", ".9")
+    .text(() => console.log("d", d));
+
+  svg
+    .selectAll("circle")
+    .data(dataset)
+    .enter()
+    .append("circle")
+    .attr("class", "dot")
+    .attr("data-xvalue", (d) => new Date(d.Year))
+    .attr("data-yvalue", (d) => d.Seconds / 60)
+    .attr("cx", (d) => {
+      return xScale(d.Year);
+    })
+    .attr("cy", (d) => {
+      return yScale(d.Seconds / 60);
+    })
+    .attr("r", 8)
+    .attr("fill", (d) => {
+      return d.Doping != "" ? "blue" : "orange";
+    })
+    .style("border-color", "black")
+    .on("mouseover", mouseOverHandler)
+    .on("mouseout", mouseOutHandler);
+};
 
 const url =
   "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json";
@@ -87,7 +140,7 @@ fetch(url)
     drawCanvas();
     generateScales();
     generateAxis();
-    drawCircles(data);
+    drawCircles(dataset);
   });
 
 // const req = new XMLHttpRequest();
