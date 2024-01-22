@@ -8,7 +8,7 @@ let xScale,
 let tooltip;
 const height = 500,
   width = 800,
-  padding = 50;
+  padding = 60;
 
 // canvas
 const drawCanvas = () => {
@@ -37,6 +37,61 @@ const drawCanvas = () => {
     .attr("y", "70px")
     .style("display", "inline-block")
     .html("35 Fastest times up Alpe d'Huez");
+
+  //create  horisontal text on the left of y-axis
+  svg
+    .append("text")
+    .attr("id", "time-minutes")
+    .attr("transform", "rotate(90)")
+    .attr("x", "100")
+    .attr("y", "-10")
+
+    .text("Time in Minutes")
+    .style("font-size", "1.2rem");
+
+  //create legends
+
+  svg
+    .append("g")
+    .attr("id", "legend")
+    .attr("transform", "translate(500,100)")
+    .style("fill", "black")
+    .style("border", "3px solid red");
+
+  const legend = d3.select("#legend");
+
+  legend
+    .append("g")
+    .attr("class", "legend-label")
+    .append("rect")
+    .attr("width", "15")
+    .attr("height", "15")
+    .attr("x", "250")
+    .attr("y", "40")
+    .style("fill", "blue");
+
+  legend
+    .append("text")
+    .attr("x", "105")
+    .attr("y", "50")
+    .text("Riders with doping allegations ")
+    .style("font-size", ".7rem");
+  legend
+    .append("g")
+    .append("rect")
+    .attr("width", "15")
+    .attr("height", "15")
+    .attr("class", "legend-label")
+    .attr("x", "250")
+    .attr("y", "20")
+    .style("fill", "orange");
+
+  legend
+    .append("text")
+    .attr("x", "145")
+    .attr("y", "30")
+    .text("No doping allegations ")
+    .style("font-size", ".7rem");
 };
 
 //scales
@@ -59,74 +114,124 @@ const generateScales = () => {
   //     .scaleLinear()
   //     .domain([d3.max(minutes), d3.min(minutes)])
   //     .range([height - padding, padding]);
+
   yScale = d3
-    .scaleLinear()
-    .domain([d3.max(minutes), d3.min(minutes)])
-    .range([height - padding, padding]);
+    .scaleTime()
+    .domain([
+      d3.min(dataset, (item) => {
+        console.log(new Date(item["Seconds"] * 1000));
+        return new Date(item["Seconds"] * 1000);
+        //return item["Seconds"];
+      }),
+      d3.max(dataset, (item) => {
+        return new Date(item["Seconds"] * 1000);
+        // return item["Seconds"];
+      }),
+    ])
+    .range([padding, height - padding]);
 };
 
 // axis
 const generateAxis = () => {
-  xAxis = d3.axisBottom(xScale);
+  //note to get read of commas in date , use call d3.tickFormat()
+  //and pass  d3.format() inside which you need to indicate the
+  //format. In this case d3.thickFormat(d3.format('d'))
+  xAxis = d3.axisBottom(xScale).tickFormat(d3.format("d"));
   svg
     .append("g")
     .attr("id", "x-axis")
-    .attr("transform", "translate(0," + (height - padding) + ")")
-    .call(xAxis);
+    .call(xAxis)
+    .attr("transform", "translate(0," + (height - padding) + ")");
 
-  yAxis = d3.axisLeft(yScale);
+  // to create minutes: seconds format,:
+  //1st : date must be new Date object
+  //2nd pass spacifire (%M:%S) as param of d3.timeformat which is
+  //then passed ss d3.tichFormat's param
+
+  const specifier = "%M:%S";
+  yAxis = d3.axisLeft(yScale).tickFormat(d3.timeFormat(specifier));
 
   svg
     .append("g")
     .attr("id", "y-axis")
-    .attr("transform", "translate(" + padding + ",0)")
-    .call(yAxis);
+    .call(yAxis)
+    .attr("transform", "translate(" + padding + ",0)");
 };
 
-const mouseOverHandler = () => {
-  tooltip.transition().style("visibility", "visible");
+const mouseOverHandler = (e, d) => {
+  // console.log("x: ", d.pageX, "y: ", d.pageY);
+  const html = `${d.Name} \nYear: ${d.Year} Time: ${d.Time} '\n\n' ${d.Doping}`;
+  tooltip
+    .transition()
+    .style("visibility", "visible")
+    .style("opacity", ".9")
+    .attr("data-year", () => d.Year)
+    .text(html);
+  // .style("top", event.pageX + "px")
+  // .style("left", event.pageY + "px");
 };
-const mouseOutHandler = () => {};
+const mousemoving = () => {
+  tooltip
+    .style("top", event.clientX + "px")
+    .style("left", event.clientY + "px");
+};
+const mouseOutHandler = () => {
+  tooltip.transition().style("visibility", "hidden");
+};
 // circles
 const drawCircles = (d, i) => {
-  console.log(d[0].Year);
-
-  const date = d.map((item) => item.Year);
-
   // tooltip
   tooltip = d3
     .select("body")
     .append("div")
     .attr("id", "tooltip")
-    .style("visibility", "visible")
-    .attr("data-year", () => d)
+    .style("visibility", "hidden")
+    .attr("data-year", (i) => d[0].Year)
     .style("position", "absolute")
-    .style("background", "yellow")
     .style("border", "1px solid black")
     .style("opacity", ".9")
-    .text(() => console.log("d", d));
+    .style("font-size", ".7rem");
 
+  // .html(
+  //   `<p>${item.Name}</p <br> <p>Year:${item.Year}, Time: ${item.Time} </p> <br><br> <p>${item.Doping}</p> `
+  // )
+
+  //
+
+  // .attr("data-xvalue", (d) => d["Year"])
+  //   .attr("data-yvalue", (d) => new Date(d["Seconds"]*1000))
+  // //
   svg
     .selectAll("circle")
     .data(dataset)
     .enter()
     .append("circle")
     .attr("class", "dot")
-    .attr("data-xvalue", (d) => new Date(d.Year))
-    .attr("data-yvalue", (d) => d.Seconds / 60)
+    .attr("data-xvalue", (d) => d.Year)
+    .attr("data-yvalue", (d) => new Date(d["Seconds"] * 1000))
     .attr("cx", (d) => {
       return xScale(d.Year);
     })
     .attr("cy", (d) => {
-      return yScale(d.Seconds / 60);
+      return yScale(new Date(d.Seconds) * 1000);
     })
     .attr("r", 8)
     .attr("fill", (d) => {
       return d.Doping != "" ? "blue" : "orange";
     })
-    .style("border-color", "black")
+
     .on("mouseover", mouseOverHandler)
+    .on("mousemove", mousemoving)
     .on("mouseout", mouseOutHandler);
+
+  svg
+    .selectAll("text")
+    .data(dataset)
+    .enter()
+    .append("text")
+    .attr("x", (e) => e.Year)
+    .attr("y", (e) => e.Seconds / 60)
+    .text((e) => e.Year);
 };
 
 const url =
