@@ -147,20 +147,9 @@ const generateAxis = () => {
 };
 
 const mouseOverHandler = (e, d) => {
-  const html = `Name: ${d.Name}.`;
-  const html2 = `Year: ${d.Year}. Time: ${d.Time}.`;
-  const html3 = `Doping:  ${d.Doping}.`;
-
-  // tooltip.style({
-  //   height: "125px",
-  //   width: "200px",
-  // });
-
-  // const tipSize = {
-  //   dx: parseInt(tooltip.style["width"]),
-  //   dy: parseInt(tooltip.style["height"]),
-  // };
-  console.log(tooltip);
+  const name = `Name: ${d.Name}.`;
+  const yearTime = `Year: ${d.Year}. Time: ${d.Time}.`;
+  const doping = `Doping:  ${d.Doping}.`;
 
   tooltip
 
@@ -169,7 +158,7 @@ const mouseOverHandler = (e, d) => {
     .attr("data-year", () => d.Year)
     .style("top", e.pageY + 5 + "px")
     .style("left", e.pageX + 10 + "px")
-    .html(`${html}<br>${html2}<br><br>${html3}`)
+    .html(`${name}<br>${yearTime}<br><br>${doping}`)
     .style("width", "auto");
 
   // tooltip
