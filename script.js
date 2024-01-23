@@ -158,8 +158,8 @@ const mouseOverHandler = (e, d) => {
     .attr("data-year", () => d.Year)
     .style("top", e.pageY + 5 + "px")
     .style("left", e.pageX + 10 + "px")
-    .html(`${name}<br>${yearTime}<br><br>${doping}`)
-    .style("width", "auto");
+    .html(`${name}<br>${yearTime}<br><br>${doping}`);
+  // .style("width", "auto");
 
   // tooltip
   //   .append("div")

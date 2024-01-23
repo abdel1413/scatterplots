@@ -3,11 +3,13 @@ body {
 
   /* align-items: center;
   justify-content: center; */
-  margin: auto auto;
+  margin: 100 auto;
+  margin-left: 200px;
+  margin-top: 60px;
   background: rgb(57, 112, 180);
-  margin-left: 120px;
+  /* margin-left: 120px;
   margin-bottom: 0;
-  margin-top: 10px;
+   */
 }
 
 /* .container {
@@ -36,7 +38,7 @@ svg {
 } */
 
 #tooltip {
-  width: 150px;
+  width: auto;
   background-color: rgb(64, 132, 214);
   padding: 0.5rem;
   border-radius: 10px;
