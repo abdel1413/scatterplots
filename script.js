@@ -14,12 +14,9 @@ const height = 500,
 const drawCanvas = () => {
   svg = d3
     .select("body")
-    .append("div")
-    .attr("id", "container")
     .append("svg")
     .attr("width", width)
     .attr("height", height)
-    .style("fill", "black")
     .attr("padding", padding);
 
   svg
@@ -27,16 +24,17 @@ const drawCanvas = () => {
     .attr("id", "title")
     .attr("x", "25%")
     .attr("y", "40px")
-    .attr("display", "block")
+
     .html("Doping in Professional Bicycle Racing");
 
   svg
     .append("text")
-    .attr("class", "subtitle")
-    .attr("x", "32%")
+    .attr("id", "subtitle")
+    .attr("x", "40%")
     .attr("y", "70px")
+
     .style("display", "inline-block")
-    .html("35 Fastest times up Alpe d'Huez");
+    .text("35 Fastest times up Alpe d'Huez");
 
   //create  horisontal text on the left of y-axis
   svg
@@ -44,8 +42,7 @@ const drawCanvas = () => {
     .attr("id", "time-minutes")
     .attr("transform", "rotate(90)")
     .attr("x", "100")
-    .attr("y", "-10")
-
+    .attr("y", "-5")
     .text("Time in Minutes")
     .style("font-size", "1.2rem");
 
@@ -97,34 +94,25 @@ const drawCanvas = () => {
 //scales
 
 const generateScales = () => {
-  const dateArray = dataset.map((item) => item.Year);
-
-  const minutes = dataset.map((item) => item.Seconds / 60);
-
-  const time = dataset.map((item) => {
-    return item.Time;
-  });
-
+  // subtract 1 to min to push dots to the right
+  // add 1 to max to push the right
   xScale = d3
     .scaleLinear()
-    .domain([d3.min(dataset, (d) => d.Year), d3.max(dataset, (d, i) => d.Year)])
+    .domain([
+      d3.min(dataset, (d) => d.Year) - 1,
+      d3.max(dataset, (d, i) => d.Year) + 1,
+    ])
     .range([padding, width - padding]);
-
-  //   yScale = d3
-  //     .scaleLinear()
-  //     .domain([d3.max(minutes), d3.min(minutes)])
-  //     .range([height - padding, padding]);
 
   yScale = d3
     .scaleTime()
     .domain([
       d3.min(dataset, (item) => {
-        console.log(new Date(item["Seconds"] * 1000));
-        return new Date(item["Seconds"] * 1000);
+        return new Date(item.Seconds * 1000);
         //return item["Seconds"];
       }),
       d3.max(dataset, (item) => {
-        return new Date(item["Seconds"] * 1000);
+        return new Date(item.Seconds * 1000);
         // return item["Seconds"];
       }),
     ])
@@ -159,38 +147,53 @@ const generateAxis = () => {
 };
 
 const mouseOverHandler = (e, d) => {
-  // console.log("x: ", d.pageX, "y: ", d.pageY);
-  const html = `${d.Name} \nYear: ${d.Year} Time: ${d.Time} '\n\n' ${d.Doping}`;
+  const html = `Name: ${d.Name}.`;
+  const html2 = `Year: ${d.Year}. Time: ${d.Time}.`;
+  const html3 = `Doping:  ${d.Doping}.`;
+
+  // tooltip.style({
+  //   height: "125px",
+  //   width: "200px",
+  // });
+
+  // const tipSize = {
+  //   dx: parseInt(tooltip.style["width"]),
+  //   dy: parseInt(tooltip.style["height"]),
+  // };
+  console.log(tooltip);
+
   tooltip
-    .transition()
+
     .style("visibility", "visible")
-    .style("opacity", ".9")
+    .style("opacity", "0.9")
     .attr("data-year", () => d.Year)
-    .text(html);
-  // .style("top", event.pageX + "px")
-  // .style("left", event.pageY + "px");
+    .style("top", e.pageY + 5 + "px")
+    .style("left", e.pageX + 10 + "px")
+    .html(`${html}<br>${html2}<br><br>${html3}`)
+    .style("width", "auto");
+
+  // tooltip
+  //   .append("div")
+  //   .text(`${html}`)
+  //   .append("br")
+  //   .text(`${html2}`)
+  //   .style("visibility", "visible");
 };
-const mousemoving = () => {
-  tooltip
-    .style("top", event.clientX + "px")
-    .style("left", event.clientY + "px");
-};
+
 const mouseOutHandler = () => {
   tooltip.transition().style("visibility", "hidden");
 };
 // circles
 const drawCircles = (d, i) => {
   // tooltip
+
   tooltip = d3
     .select("body")
     .append("div")
     .attr("id", "tooltip")
-    .style("visibility", "hidden")
-    .attr("data-year", (i) => d[0].Year)
     .style("position", "absolute")
-    .style("border", "1px solid black")
-    .style("opacity", ".9")
-    .style("font-size", ".7rem");
+    .style("visibility", "hidden")
+    .style("opacity", "0");
 
   // .html(
   //   `<p>${item.Name}</p <br> <p>Year:${item.Year}, Time: ${item.Time} </p> <br><br> <p>${item.Doping}</p> `
@@ -221,17 +224,7 @@ const drawCircles = (d, i) => {
     })
 
     .on("mouseover", mouseOverHandler)
-    .on("mousemove", mousemoving)
     .on("mouseout", mouseOutHandler);
-
-  svg
-    .selectAll("text")
-    .data(dataset)
-    .enter()
-    .append("text")
-    .attr("x", (e) => e.Year)
-    .attr("y", (e) => e.Seconds / 60)
-    .text((e) => e.Year);
 };
 
 const url =
